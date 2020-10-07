@@ -376,6 +376,17 @@ void ModuleManager::Initialize(CommandHandler &cmdHandler)
    }
 }
 
+void ModuleManager::Reload()
+{
+   std::cout << "We are reload... " << std::endl;
+   while (Get().mModules.size() > 0){
+      std::cout << "ModuleSize: " + Get().mModules.size() << std::endl;
+      Get().mModules[Get().mModules.size() - 1]->Unload();
+      Get().mModules.pop_back();
+   }
+   std::cout << "We are load... " << std::endl;
+   Initialize();
+}
 // static
 int ModuleManager::Dispatch(ModuleDispatchTypes type)
 {
