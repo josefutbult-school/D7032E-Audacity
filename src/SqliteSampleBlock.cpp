@@ -300,9 +300,11 @@ SqliteSampleBlock::SqliteSampleBlock(
 
 SqliteSampleBlock::~SqliteSampleBlock()
 {
-   auto &callback = mpFactory->mCallback;
-   if (callback)
-      GuardedCall( [&]{ callback( *this ); } );
+   if (mpFactory) {
+      auto &callback = mpFactory->mCallback;
+      if (callback)
+         GuardedCall( [&]{ callback( *this ); } );
+   }
 
    if (IsSilent()) {
       // The block object was constructed but failed to Load() or Commit().
@@ -330,6 +332,9 @@ SqliteSampleBlock::~SqliteSampleBlock()
 
 DBConnection *SqliteSampleBlock::Conn() const
 {
+   if (!mpFactory)
+      return nullptr;
+
    auto &pConnection = mpFactory->mppConnection->mpConnection;
    if (!pConnection) {
       throw SimpleMessageBoxException
@@ -368,7 +373,8 @@ size_t SqliteSampleBlock::DoGetSamples(samplePtr dest,
                                      size_t numsamples)
 {
    if (IsSilent()) {
-      ClearSamples(dest, destformat, sampleoffset, numsamples);
+      auto size = SAMPLE_SIZE(destformat);
+      memset(dest, 0, numsamples * size);
       return numsamples;
    }
 
