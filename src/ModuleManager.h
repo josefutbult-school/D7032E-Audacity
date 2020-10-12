@@ -87,6 +87,8 @@ public:
 
    void Initialize(CommandHandler & cmdHandler);
    int Dispatch(ModuleDispatchTypes type);
+   
+   void Reload();
 
    // PluginManager use
    // Can be called before Initialize()
@@ -110,6 +112,8 @@ private:
 
    void InitializeBuiltins();
    ModuleInterface *LoadModule(const PluginPath & path);
+
+   void Initialize();
 
 private:
    friend ModuleInterfaceDeleter;
