@@ -33,6 +33,7 @@ code out of ModuleManager.
 /// This is the function which actually obeys one command.
 static int ExecCommand(wxString *pIn, wxString *pOut, bool fromMain)
 {
+      std::cout << "ExecCommand..." << std::endl;
    {
       CommandBuilder builder(::GetActiveProject(), *pIn);
       if (builder.WasValid())
@@ -65,6 +66,7 @@ static int ExecCommand(wxString *pIn, wxString *pOut, bool fromMain)
 /// Executes a command in the worker (script) thread
 static int ExecFromWorker(wxString *pIn, wxString *pOut)
 {
+   std::cout << "ExecFromWorkerCommand..." << std::endl;
    return ExecCommand(pIn, pOut, false);
 }
 
@@ -77,31 +79,21 @@ static int ExecFromMain(wxString *pIn, wxString *pOut)
 /// Starts the script server
 void ScriptCommandRelay::StartScriptServer(tpRegScriptServerFunc scriptFn)
 {
-   serverActive = true;
-   if(!serverStarted) {
-      serverStarted = true;
-      wxASSERT(scriptFn != NULL);
-      std::cout << "Script server starting..." << std::endl;
+   wxASSERT(scriptFn != NULL);
 
-      auto server = [](tpRegScriptServerFunc function)
+   auto server = [](tpRegScriptServerFunc function)
+   {
+      while (true)
       {
-         while (true)
-         {
-            if(ScriptCommandRelay::serverActive)
-               function(ExecFromWorker);
-         }
-      };
+         function(ExecFromWorker);
+      }
+   };
 
-      std::thread(server, scriptFn).detach();
-   }
+   std::thread(server, scriptFn).detach();
+   serverStarted = true;
 }
 
 bool ScriptCommandRelay::serverStarted = false;
-bool ScriptCommandRelay::serverActive = false;
-
-void ScriptCommandRelay::CloseScriptServer(){
-   serverActive = false;
-}
 
 bool ScriptCommandRelay::HasScriptServerStarted(){
    return serverStarted;

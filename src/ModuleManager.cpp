@@ -363,8 +363,8 @@ void ModuleManager::Initialize(){
          }
          else
          {
-            Get().mModules.push_back(std::move(umodule));
-            
+            if(Get().mModules.find(files[i]) == Get().mModules.end())
+               Get().mModules.emplace(files[i], std::move(umodule));
 #ifdef EXPERIMENTAL_MODULE_PREFS
             // Loaded successfully, restore the status.
             ModulePrefs::SetModuleStatus(files[i], iModuleStatus);
@@ -384,14 +384,6 @@ void ModuleManager::Initialize(){
 
 void ModuleManager::Reload()
 {
-   ScriptCommandRelay::CloseScriptServer();
-   std::cout << "We are reload... " << std::endl;
-   while (Get().mModules.size() > 0) {
-      std::cout << " ModuleSize: " + Get().mModules.size() << std::endl;
-      Get().mModules[Get().mModules.size() - 1].get()->Unload();
-      Get().mModules.pop_back();
-   }
-   std::cout << "We are load... " << std::endl;
    Initialize();
 }
 
@@ -399,7 +391,7 @@ void ModuleManager::Reload()
 int ModuleManager::Dispatch(ModuleDispatchTypes type)
 {
    for (const auto &module: mModules) {
-      module->Dispatch(type);
+      module.second->Dispatch(type);
    }
    return 0;
 }

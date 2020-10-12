@@ -131,7 +131,7 @@ private:
 
    // Other libraries that receive notifications of events described by
    // ModuleDispatchTypes:
-   std::vector<std::unique_ptr<Module>> mModules;
+   std::map<wxString, std::unique_ptr<Module>> mModules;
 };
 
 #endif /* __AUDACITY_MODULEMANAGER_H__ */
