@@ -26,6 +26,7 @@ with names like mnod-script-pipe that add NEW features.
 #include "../ShuttleGui.h"
 
 #include "../Prefs.h"
+#include "../ModuleManager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +39,7 @@ ModulePrefs::ModulePrefs(wxWindow * parent, wxWindowID winid)
 
 ModulePrefs::~ModulePrefs()
 {
+   ModuleManager::Get().Reload();
 }
 
 ComponentInterfaceSymbol ModulePrefs::GetSymbol()

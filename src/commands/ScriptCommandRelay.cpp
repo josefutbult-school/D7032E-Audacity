@@ -28,6 +28,7 @@ code out of ModuleManager.
 #include <wx/app.h>
 #include <wx/string.h>
 #include <thread>
+#include <iostream>
 
 /// This is the function which actually obeys one command.
 static int ExecCommand(wxString *pIn, wxString *pOut, bool fromMain)
@@ -76,17 +77,34 @@ static int ExecFromMain(wxString *pIn, wxString *pOut)
 /// Starts the script server
 void ScriptCommandRelay::StartScriptServer(tpRegScriptServerFunc scriptFn)
 {
-   wxASSERT(scriptFn != NULL);
+   serverActive = true;
+   if(!serverStarted) {
+      serverStarted = true;
+      wxASSERT(scriptFn != NULL);
+      std::cout << "Script server starting..." << std::endl;
 
-   auto server = [](tpRegScriptServerFunc function)
-   {
-      while (true)
+      auto server = [](tpRegScriptServerFunc function)
       {
-         function(ExecFromWorker);
-      }
-   };
+         while (true)
+         {
+            if(ScriptCommandRelay::serverActive)
+               function(ExecFromWorker);
+         }
+      };
 
-   std::thread(server, scriptFn).detach();
+      std::thread(server, scriptFn).detach();
+   }
+}
+
+bool ScriptCommandRelay::serverStarted = false;
+bool ScriptCommandRelay::serverActive = false;
+
+void ScriptCommandRelay::CloseScriptServer(){
+   serverActive = false;
+}
+
+bool ScriptCommandRelay::HasScriptServerStarted(){
+   return serverStarted;
 }
 
 void * ExecForLisp( char * pIn )

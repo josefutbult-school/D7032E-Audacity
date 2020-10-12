@@ -29,6 +29,11 @@ class ScriptCommandRelay
 {
 public:
    static void StartScriptServer(tpRegScriptServerFunc scriptFn);
+   static void CloseScriptServer();
+   static bool HasScriptServerStarted();
+private:
+   static bool serverStarted;
+   static bool serverActive;
 };
 
 // The void * return is actually a Lisp LVAL and will be cast to such as needed.

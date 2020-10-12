@@ -234,6 +234,10 @@ ModuleManager::~ModuleManager()
 // static 
 void ModuleManager::Initialize(CommandHandler &cmdHandler)
 {
+   Initialize();
+}
+
+void ModuleManager::Initialize(){
    const auto &audacityPathList = FileNames::AudacityPathList();
    FilePaths pathList;
    FilePaths files;
@@ -262,6 +266,7 @@ void ModuleManager::Initialize(CommandHandler &cmdHandler)
 
    FilePaths checked;
    wxString saveOldCWD = ::wxGetCwd();
+
    for (i = 0; i < files.size(); i++) {
       // As a courtesy to some modules that might be bridges to
       // open other modules, we set the current working
@@ -359,7 +364,7 @@ void ModuleManager::Initialize(CommandHandler &cmdHandler)
          else
          {
             Get().mModules.push_back(std::move(umodule));
-
+            
 #ifdef EXPERIMENTAL_MODULE_PREFS
             // Loaded successfully, restore the status.
             ModulePrefs::SetModuleStatus(files[i], iModuleStatus);
@@ -367,13 +372,27 @@ void ModuleManager::Initialize(CommandHandler &cmdHandler)
          }
       }
    }
+   
    ::wxSetWorkingDirectory(saveOldCWD);
-
+   
    // After loading all the modules, we may have a registered scripting function.
-   if(scriptFn)
+   if(scriptFn && !ScriptCommandRelay::HasScriptServerStarted())
    {
       ScriptCommandRelay::StartScriptServer(scriptFn);
    }
+}
+
+void ModuleManager::Reload()
+{
+   ScriptCommandRelay::CloseScriptServer();
+   std::cout << "We are reload... " << std::endl;
+   while (Get().mModules.size() > 0) {
+      std::cout << " ModuleSize: " + Get().mModules.size() << std::endl;
+      Get().mModules[Get().mModules.size() - 1].get()->Unload();
+      Get().mModules.pop_back();
+   }
+   std::cout << "We are load... " << std::endl;
+   Initialize();
 }
 
 // static
