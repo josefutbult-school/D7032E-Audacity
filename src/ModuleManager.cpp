@@ -284,7 +284,14 @@ void ModuleManager::Initialize(){
 #ifdef EXPERIMENTAL_MODULE_PREFS
       int iModuleStatus = ModulePrefs::GetModuleStatus( files[i] );
       if( iModuleStatus == kModuleDisabled )
+      {
+         if(Get().mModules.find(files[i]) != Get().mModules.end())
+         {
+            auto msg = XO("Module \"%s\" already loaded.").Format( ShortName );
+            AudacityMessageBox(XO("Some modules has been set to disabled this will not take effect until Audacity restarts!"), msg);
+         }
          continue;
+      } 
       if( iModuleStatus == kModuleFailed )
          continue;
       // New module?  You have to go and explicitly enable it.
@@ -330,7 +337,7 @@ void ModuleManager::Initialize(){
 #endif
 
       auto umodule = std::make_unique<Module>(files[i]);
-         if (umodule->Load())   // it will get rejected if there  are version problems
+      if (umodule->Load())   // it will get rejected if there are version problems
       {
          auto module = umodule.get();
 
